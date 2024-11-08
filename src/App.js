@@ -1,41 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 function ZoesAccountsApp() {
   const [startingBalance, setStartingBalance] = useState(0);
-  const [entries, setEntries] = useState(Array(30).fill({ income: '', expense: '', date: '', notes: '' }));
+  const [entries, setEntries] = useState([{ income: '', expense: '', date: '', notes: '' }]);
   const [closingBalance, setClosingBalance] = useState(startingBalance);
 
-  // Add a new row to the entries
-  const addRow = () => {
-    setEntries([...entries, { income: '', expense: '', date: '', notes: '' }]);
-  };
-
-  // Calculate the closing balance and each row’s running total
-  const calculateClosingBalance = (updatedEntries) => {
+  // Memoize calculateClosingBalance to prevent it from changing on every render
+  const calculateClosingBalance = useCallback(() => {
     let balance = startingBalance;
-    const newEntries = updatedEntries.map((entry) => {
+    const newEntries = entries.map((entry) => {
       const income = parseFloat(entry.income) || 0;
       const expense = parseFloat(entry.expense) || 0;
       const balanceChange = balance + income - expense;
-      balance = balanceChange; // Update balance for the next row
+      balance = balanceChange;
       return { ...entry, balanceChange };
     });
     setEntries(newEntries);
     setClosingBalance(balance);
-  };
+  }, [startingBalance, entries]);
 
-  // Handle input changes and update the entries array, then recalculate balances
+  // useEffect with memoized calculateClosingBalance
+  useEffect(() => {
+    calculateClosingBalance();
+  }, [calculateClosingBalance]);
+
   const handleInputChange = (index, field, value) => {
     const updatedEntries = entries.map((entry, i) =>
       i === index ? { ...entry, [field]: value } : entry
     );
-    calculateClosingBalance(updatedEntries); // Automatically update balance after change
+    setEntries(updatedEntries);
   };
 
-  // Update balance when starting balance changes
-  useEffect(() => {
-    calculateClosingBalance(entries);
-  }, [startingBalance]);
+  const addRow = () => {
+    setEntries([...entries, { income: '', expense: '', date: '', notes: '' }]);
+  };
+  
 
   return (
     <div className="zoes-accounts p-4 text-center bg-blue-200">
