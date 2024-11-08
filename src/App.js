@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function ZoesAccountsApp() {
   const [startingBalance, setStartingBalance] = useState(0);
   const [entries, setEntries] = useState([{ income: '', expense: '', date: '', notes: '' }]);
   const [closingBalance, setClosingBalance] = useState(startingBalance);
 
-  // Memoize calculateClosingBalance to prevent it from changing on every render
-  const calculateClosingBalance = useCallback(() => {
+  useEffect(() => {
     let balance = startingBalance;
     const newEntries = entries.map((entry) => {
       const income = parseFloat(entry.income) || 0;
@@ -19,11 +18,6 @@ function ZoesAccountsApp() {
     setClosingBalance(balance);
   }, [startingBalance, entries]);
 
-  // useEffect with memoized calculateClosingBalance
-  useEffect(() => {
-    calculateClosingBalance();
-  }, [calculateClosingBalance]);
-
   const handleInputChange = (index, field, value) => {
     const updatedEntries = entries.map((entry, i) =>
       i === index ? { ...entry, [field]: value } : entry
@@ -34,7 +28,6 @@ function ZoesAccountsApp() {
   const addRow = () => {
     setEntries([...entries, { income: '', expense: '', date: '', notes: '' }]);
   };
-  
 
   return (
     <div className="zoes-accounts p-4 text-center bg-blue-200">
@@ -49,12 +42,12 @@ function ZoesAccountsApp() {
         />
       </label>
       <h2>Closing Balance: <span className={`font-semibold ${
-  closingBalance > 0.01 
-    ? 'text-green-600' 
-    : closingBalance < -0.01 
-      ? 'text-red-600' 
-      : 'text-black'
-}`}>{closingBalance.toFixed(2)}</span></h2>
+        closingBalance > 0.01 
+          ? 'text-green-600' 
+          : closingBalance < -0.01 
+            ? 'text-red-600' 
+            : 'text-black'
+      }`}>{closingBalance.toFixed(2)}</span></h2>
       </div>
 
       <section className='flex justify-center'>
@@ -110,13 +103,8 @@ function ZoesAccountsApp() {
         </tbody>
       </table>
         </div>
-      
-
-      
-
-    
       </section>
-      <button onClick={addRow}>Add Row</button>
+      <button onClick={addRow} className="mt-4 p-2 bg-blue-500 text-white rounded">Add Row</button>
     </div>
   );
 }
